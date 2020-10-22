@@ -45,8 +45,8 @@ public enum WebApplicationType {
 	 */
 	REACTIVE;
 
-	private static final String[] SERVLET_INDICATOR_CLASSES = { "javax.servlet.Servlet",
-			"org.springframework.web.context.ConfigurableWebApplicationContext" };
+	private static final String[] SERVLET_INDICATOR_CLASSES = {"javax.servlet.Servlet",
+			"org.springframework.web.context.ConfigurableWebApplicationContext"};
 
 	private static final String WEBMVC_INDICATOR_CLASS = "org.springframework." + "web.servlet.DispatcherServlet";
 
@@ -59,15 +59,21 @@ public enum WebApplicationType {
 	private static final String REACTIVE_APPLICATION_CONTEXT_CLASS = "org.springframework.boot.web.reactive.context.ReactiveWebApplicationContext";
 
 	static WebApplicationType deduceFromClasspath() {
+
+		// 判断WebFlux不为空 并且 WebMVC为空 并且JERSEY为空 便返回WebApplicationType.REACTIVE 说明是REACTIVE服务
 		if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
 				&& !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, null)) {
 			return WebApplicationType.REACTIVE;
 		}
+
+		// 遍历判断不是SERVLET服务，便是非Web服务
 		for (String className : SERVLET_INDICATOR_CLASSES) {
 			if (!ClassUtils.isPresent(className, null)) {
 				return WebApplicationType.NONE;
 			}
 		}
+
+		// 上面都不符合就返回SERVLET服务
 		return WebApplicationType.SERVLET;
 	}
 
@@ -84,8 +90,7 @@ public enum WebApplicationType {
 	private static boolean isAssignable(String target, Class<?> type) {
 		try {
 			return ClassUtils.resolveClassName(target, null).isAssignableFrom(type);
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			return false;
 		}
 	}

@@ -92,6 +92,7 @@ public class TomcatWebServer implements WebServer {
 			try {
 				addInstanceIdToEngineName();
 
+				// 找到Tomcat上下文
 				Context context = findContext();
 				context.addLifecycleListener((event) -> {
 					if (context.equals(event.getSource()) && Lifecycle.START_EVENT.equals(event.getType())) {
@@ -102,6 +103,7 @@ public class TomcatWebServer implements WebServer {
 				});
 
 				// Start the server to trigger initialization listeners
+				// 启动Tomcat
 				this.tomcat.start();
 
 				// We can re-throw failure exception directly in the main thread

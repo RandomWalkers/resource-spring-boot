@@ -139,8 +139,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	public final void refresh() throws BeansException, IllegalStateException {
 		try {
 			super.refresh();
-		}
-		catch (RuntimeException ex) {
+		} catch (RuntimeException ex) {
 			stopAndReleaseWebServer();
 			throw ex;
 		}
@@ -151,8 +150,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		super.onRefresh();
 		try {
 			createWebServer();
-		}
-		catch (Throwable ex) {
+		} catch (Throwable ex) {
 			throw new ApplicationContextException("Unable to start web server", ex);
 		}
 	}
@@ -178,12 +176,10 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		if (webServer == null && servletContext == null) {
 			ServletWebServerFactory factory = getWebServerFactory();
 			this.webServer = factory.getWebServer(getSelfInitializer());
-		}
-		else if (servletContext != null) {
+		} else if (servletContext != null) {
 			try {
 				getSelfInitializer().onStartup(servletContext);
-			}
-			catch (ServletException ex) {
+			} catch (ServletException ex) {
 				throw new ApplicationContextException("Cannot initialize servlet context", ex);
 			}
 		}
@@ -207,6 +203,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 			throw new ApplicationContextException("Unable to start ServletWebServerApplicationContext due to multiple "
 					+ "ServletWebServerFactory beans : " + StringUtils.arrayToCommaDelimitedString(beanNames));
 		}
+		// TODO getBean -> doGetBean -> createBean -> doCreateBean -> createInstance -> bean的初始化方法
 		return getBeanFactory().getBean(beanNames[0], ServletWebServerFactory.class);
 	}
 
@@ -283,8 +280,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 				long elapsedTime = System.currentTimeMillis() - getStartupDate();
 				logger.info("Root WebApplicationContext: initialization completed in " + elapsedTime + " ms");
 			}
-		}
-		catch (RuntimeException | Error ex) {
+		} catch (RuntimeException | Error ex) {
 			logger.error("Context initialization failed", ex);
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ex);
 			throw ex;
@@ -305,8 +301,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 			try {
 				webServer.stop();
 				this.webServer = null;
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				throw new IllegalStateException(ex);
 			}
 		}

@@ -91,12 +91,23 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
 				.loadMetadata(this.beanClassLoader);
 		AnnotationAttributes attributes = getAttributes(annotationMetadata);
+
+		/*
+		 * 去导入的jar包下的META-INF文件夹下找spring.factories文件中找EnableAutoConfiguration为key的集合，
+		 *		根据maven依赖导入jar包来筛选配置类
+		 */
 		List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
+
+		// 去除重复的配置类 若我们自己写starter，可能会存在重复的
 		configurations = removeDuplicates(configurations);
+
 		Set<String> exclusions = getExclusions(annotationMetadata, attributes);
 		checkExcludedClasses(configurations, exclusions);
 		configurations.removeAll(exclusions);
+
+		// 根据maven导入的启动器过滤出 需要导入的配置类
 		configurations = filter(configurations, autoConfigurationMetadata);
+
 		fireAutoConfigurationImportEvents(configurations, exclusions);
 		return StringUtils.toStringArray(configurations);
 	}
@@ -389,8 +400,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			try {
 				return this.beanFactory.getBean(SharedMetadataReaderFactoryContextInitializer.BEAN_NAME,
 						MetadataReaderFactory.class);
-			}
-			catch (NoSuchBeanDefinitionException ex) {
+			} catch (NoSuchBeanDefinitionException ex) {
 				return new CachingMetadataReaderFactory(this.resourceLoader);
 			}
 		}
