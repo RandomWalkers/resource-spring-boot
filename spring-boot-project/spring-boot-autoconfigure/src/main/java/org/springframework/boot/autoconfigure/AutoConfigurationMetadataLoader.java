@@ -44,6 +44,10 @@ final class AutoConfigurationMetadataLoader {
 
 	static AutoConfigurationMetadata loadMetadata(ClassLoader classLoader, String path) {
 		try {
+			/*
+				ClassLoader.getResource()方法找到具有给定名称的资源。资源是一些数据(图像，音频，文本等),返回URL对象读取资源。
+				该方法就是获取该目录下的配置数据spring-autoconfigure-metadata.properties
+			 */
 			Enumeration<URL> urls = (classLoader != null) ? classLoader.getResources(path)
 					: ClassLoader.getSystemResources(path);
 			Properties properties = new Properties();
@@ -51,8 +55,7 @@ final class AutoConfigurationMetadataLoader {
 				properties.putAll(PropertiesLoaderUtils.loadProperties(new UrlResource(urls.nextElement())));
 			}
 			return loadMetadata(properties);
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			throw new IllegalArgumentException("Unable to load @ConditionalOnClass location [" + path + "]", ex);
 		}
 	}

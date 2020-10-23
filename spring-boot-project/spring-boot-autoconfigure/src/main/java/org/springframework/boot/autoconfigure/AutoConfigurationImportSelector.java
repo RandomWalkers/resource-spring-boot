@@ -85,30 +85,44 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 
 	@Override
 	public String[] selectImports(AnnotationMetadata annotationMetadata) {
+		// 判断 enableAutoConfiguration注解有没有开启，默认开启（是否进行自动装配）
 		if (!isEnabled(annotationMetadata)) {
 			return NO_IMPORTS;
 		}
+
+		// 第一步：加载配置文件META-INF/spring-autoconfigure-metadata.properties，从中获取所有支持自动配置的信息
 		AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
 				.loadMetadata(this.beanClassLoader);
+
+		// 获取EnableAutoConfiguration的属性，也就是exclude和excludeName的内容
 		AnnotationAttributes attributes = getAttributes(annotationMetadata);
 
-		/*
-		 * 去导入的jar包下的META-INF文件夹下找spring.factories文件中找EnableAutoConfiguration为key的集合，
-		 *		根据maven依赖导入jar包来筛选配置类
-		 */
+		// 第二步：去导入的jar包下的META-INF文件夹下找spring.factories文件中找EnableAutoConfiguration为key的集合，
 		List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
 
-		// 去除重复的配置类 若我们自己写starter，可能会存在重复的
+		// 去除重复的配置类，若我们自己写的starter 可能存在重复的
 		configurations = removeDuplicates(configurations);
 
+		// 如果项目中某些自动配置类，我们不希望其自动配置，我们可以通过EnableAutoConfiguration的exclude或excludeName属性进行配置，
+		// 	或者也可以在配置文件里通过配置项“spring.autoconfigure.exclude”进行配置。
+		// 找到不希望自动配置的配置类（根据EnableAutoConfiguration注解的一个exclusions属性）
 		Set<String> exclusions = getExclusions(annotationMetadata, attributes);
+
+		// 校验排除类（exclusions指定的类必须是自动配置类，否则抛出异常）
 		checkExcludedClasses(configurations, exclusions);
+
+		//删除所有不希望自动配置的配置类
 		configurations.removeAll(exclusions);
 
-		// 根据maven导入的启动器过滤出 需要导入的配置类
+		/*
+			第三步：根据OnClassCondition（注解中配置的当存在某类才生效）注解过滤掉一些条件没有满足的
+			根据maven导入的启动器过滤出 需要导入的配置类
+		 */
 		configurations = filter(configurations, autoConfigurationMetadata);
 
+		// 第四步：广播AutoConfigurationImportEvents事件
 		fireAutoConfigurationImportEvents(configurations, exclusions);
+
 		return StringUtils.toStringArray(configurations);
 	}
 
